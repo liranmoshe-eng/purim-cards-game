@@ -316,126 +316,92 @@
             margin-bottom: 10px;
         }
 
-        .difficulty-btns {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin: 20px 0;
-            flex-wrap: wrap;
+        .players-form {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 20px;
+            margin: 20px auto;
+            max-width: 500px;
         }
 
-        .diff-btn {
+        .players-form h3 {
+            text-align: center;
+            margin-bottom: 15px;
+            color: #ffd700;
+        }
+
+        .player-input-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .player-input-row input {
+            flex: 1;
+            padding: 10px 15px;
+            border-radius: 25px;
+            border: 2px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.15);
+            color: white;
+            font-size: 1.1em;
+            font-family: 'Heebo', sans-serif;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .player-input-row input::placeholder {
+            color: rgba(255,255,255,0.5);
+        }
+
+        .player-input-row input:focus {
+            border-color: #ffd700;
+        }
+
+        .player-input-row .remove-player {
+            background: rgba(244,67,54,0.6);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            font-size: 1.2em;
+            cursor: pointer;
+            font-family: 'Heebo', sans-serif;
+            transition: background 0.3s;
+        }
+
+        .player-input-row .remove-player:hover {
+            background: rgba(244,67,54,0.9);
+        }
+
+        .add-player-btn {
+            display: block;
+            margin: 10px auto 0;
             background: rgba(255,255,255,0.2);
             color: white;
-            border: 2px solid rgba(255,255,255,0.5);
-            padding: 10px 25px;
-            font-size: 1.1em;
+            border: 2px dashed rgba(255,255,255,0.4);
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-size: 1em;
             font-weight: 700;
-            border-radius: 50px;
             cursor: pointer;
             font-family: 'Heebo', sans-serif;
             transition: all 0.3s;
         }
 
-        .diff-btn:hover, .diff-btn.active {
-            background: rgba(255,255,255,0.4);
+        .add-player-btn:hover {
+            background: rgba(255,255,255,0.3);
             border-color: #ffd700;
         }
 
-        /* Toggle switch for mixed sizes */
-        .toggle-row {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            margin: 15px 0;
-        }
-
-        .toggle-label {
-            color: white;
-            font-size: 1.1em;
+        .current-player-banner {
+            text-align: center;
+            font-size: 1.3em;
             font-weight: 700;
-        }
-
-        .toggle-switch {
-            position: relative;
-            width: 56px;
-            height: 30px;
-            cursor: pointer;
-        }
-
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .toggle-slider {
-            position: absolute;
-            inset: 0;
-            background: rgba(255,255,255,0.25);
-            border-radius: 30px;
-            transition: 0.3s;
-        }
-
-        .toggle-slider::before {
-            content: '';
-            position: absolute;
-            height: 24px;
-            width: 24px;
-            bottom: 3px;
-            left: 3px;
-            background: white;
-            border-radius: 50%;
-            transition: 0.3s;
-        }
-
-        .toggle-switch input:checked + .toggle-slider {
-            background: #ffd700;
-        }
-
-        .toggle-switch input:checked + .toggle-slider::before {
-            transform: translateX(26px);
-        }
-
-        .size-preview {
-            display: flex;
-            gap: 8px;
-            align-items: flex-end;
-            justify-content: center;
-            margin-top: 5px;
-            opacity: 0.7;
-            transition: opacity 0.3s;
-        }
-
-        .size-preview.active {
-            opacity: 1;
-        }
-
-        .size-preview .preview-big {
-            font-size: 2em;
-        }
-
-        .size-preview .preview-small {
-            font-size: 1.2em;
-        }
-
-        .timer-bar {
-            width: 100%;
-            max-width: 400px;
-            height: 8px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 4px;
-            margin: 0 auto;
-            overflow: hidden;
-            display: none;
-        }
-
-        .timer-bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #ffd700, #ff6b6b);
-            border-radius: 4px;
-            transition: width 0.1s linear;
+            color: #ffd700;
+            margin-bottom: 5px;
         }
 
         @media (max-width: 850px) {
@@ -604,7 +570,9 @@ verifyCards(allCards);
 // ============================================
 let state = {
     screen: 'start',
-    score: 0,
+    players: ['', ''],
+    currentPlayerIndex: 0,
+    scores: [],
     round: 0,
     totalRounds: 10,
     streak: 0,
@@ -616,13 +584,8 @@ let state = {
     usedPairs: new Set(),
     message: '',
     messageType: '',
-    timeLimit: 0,
-    timeLeft: 0,
-    timerInterval: null,
-    difficulty: 'normal',
     mixedSizes: false,
     shuffledSymbols: null,
-    // Per-card size assignments (randomized each round)
     card1Sizes: [],
     card2Sizes: [],
 };
@@ -676,30 +639,16 @@ function getCommonSymbol(card1, card2) {
     return card1.find(s => card2.includes(s));
 }
 
-function startGame(difficulty) {
-    state.difficulty = difficulty;
-    state.score = 0;
+function startGame() {
+    state.scores = state.players.map(() => 0);
+    state.currentPlayerIndex = 0;
     state.round = 0;
+    state.totalRounds = 10;
     state.streak = 0;
     state.bestStreak = 0;
     state.usedPairs.clear();
     state.message = '';
     state.messageType = '';
-
-    switch(difficulty) {
-        case 'easy':
-            state.totalRounds = 8;
-            state.timeLimit = 0;
-            break;
-        case 'normal':
-            state.totalRounds = 12;
-            state.timeLimit = 15;
-            break;
-        case 'hard':
-            state.totalRounds = 15;
-            state.timeLimit = 8;
-            break;
-    }
 
     const symbolIndices = [];
     for (let i = 0; i < 57; i++) symbolIndices.push(i);
@@ -711,52 +660,19 @@ function startGame(difficulty) {
 
 function nextRound() {
     state.round++;
-    if (state.round > state.totalRounds) {
-        endGame();
-        return;
-    }
 
     const [i, j] = getRandomPair();
     state.card1 = shuffleArray(allCards[i]);
     state.card2 = shuffleArray(allCards[j]);
     state.selectedOnCard1 = null;
     state.selectedOnCard2 = null;
-    state.message = `סיבוב ${state.round} מתוך ${state.totalRounds}`;
+    state.message = `סיבוב ${state.round} - תור של ${state.players[state.currentPlayerIndex]}`;
     state.messageType = 'info';
 
-    // Generate random size assignments for this round
     state.card1Sizes = generateSizeAssignments(8);
     state.card2Sizes = generateSizeAssignments(8);
 
-    startTimer();
     render();
-}
-
-function startTimer() {
-    if (state.timerInterval) clearInterval(state.timerInterval);
-    if (state.timeLimit === 0) return;
-
-    state.timeLeft = state.timeLimit * 10;
-    state.timerInterval = setInterval(() => {
-        state.timeLeft--;
-        updateTimerBar();
-        if (state.timeLeft <= 0) {
-            clearInterval(state.timerInterval);
-            state.streak = 0;
-            state.message = '⏰ נגמר הזמן!';
-            state.messageType = 'wrong';
-            render();
-            setTimeout(nextRound, 1500);
-        }
-    }, 100);
-}
-
-function updateTimerBar() {
-    const bar = document.querySelector('.timer-bar-fill');
-    if (bar && state.timeLimit > 0) {
-        const pct = (state.timeLeft / (state.timeLimit * 10)) * 100;
-        bar.style.width = pct + '%';
-    }
 }
 
 function selectSymbol(cardNum, symbolIndex) {
@@ -774,32 +690,28 @@ function selectSymbol(cardNum, symbolIndex) {
 }
 
 function checkAnswer() {
-    if (state.timerInterval) clearInterval(state.timerInterval);
-
     const sym1 = state.card1[state.selectedOnCard1];
     const sym2 = state.card2[state.selectedOnCard2];
     const commonSym = getCommonSymbol(state.card1, state.card2);
+    const playerName = state.players[state.currentPlayerIndex];
 
     if (sym1 === sym2 && sym1 === commonSym) {
         state.streak++;
         if (state.streak > state.bestStreak) state.bestStreak = state.streak;
 
-        let points = 10;
-        if (state.timeLimit > 0) {
-            points += Math.floor(state.timeLeft / (state.timeLimit * 10) * 10);
-        }
-        points += state.streak * 2;
-        state.score += points;
+        let points = 10 + state.streak * 2;
+        state.scores[state.currentPlayerIndex] += points;
 
-        state.message = `🎉 נכון! +${points} נקודות`;
+        state.message = `🎉 ${playerName} - נכון! +${points} נקודות`;
         state.messageType = 'correct';
 
         showConfetti();
         render();
+        state.currentPlayerIndex = (state.currentPlayerIndex + 1) % state.players.length;
         setTimeout(nextRound, 1200);
     } else {
         state.streak = 0;
-        state.message = '❌ לא נכון, נסו שוב!';
+        state.message = `❌ ${playerName} - לא נכון, נסו שוב!`;
         state.messageType = 'wrong';
         state.selectedOnCard1 = null;
         state.selectedOnCard2 = null;
@@ -808,7 +720,6 @@ function checkAnswer() {
 }
 
 function endGame() {
-    if (state.timerInterval) clearInterval(state.timerInterval);
     state.screen = 'end';
     showConfetti();
     render();
@@ -858,28 +769,21 @@ function getSymbol(cardSymbolIndex) {
 }
 
 function renderStartScreen() {
+    const playersHtml = state.players.map((name, i) => `
+        <div class="player-input-row">
+            <input type="text" class="player-name-input" data-index="${i}"
+                   placeholder="שם שחקן/ית ${i + 1}" value="${name}">
+            ${state.players.length > 2 ? `<button class="remove-player" data-index="${i}">✕</button>` : ''}
+        </div>
+    `).join('');
+
     return `
         <div class="start-screen">
             <h2>🎭 ברוכים הבאים לחידון פורים! 🎭</h2>
-            <h3 style="color: #ffd700; margin: 20px 0 10px;">בחרו רמת קושי:</h3>
-            <div class="difficulty-btns">
-                <button class="diff-btn" data-diff="easy">🟢 קל<br><small>8 סיבובים, ללא זמן</small></button>
-                <button class="diff-btn active" data-diff="normal">🟡 רגיל<br><small>12 סיבובים, 15 שניות</small></button>
-                <button class="diff-btn" data-diff="hard">🔴 קשה<br><small>15 סיבובים, 8 שניות</small></button>
-            </div>
-            <div class="toggle-row">
-                <label class="toggle-label">גדלים שונים (יותר מאתגר!):</label>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="mixedSizesToggle" ${state.mixedSizes ? 'checked' : ''}>
-                    <span class="toggle-slider"></span>
-                </label>
-            </div>
-            <div class="size-preview ${state.mixedSizes ? 'active' : ''}" id="sizePreview">
-                <span class="preview-big">🎭</span>
-                <span class="preview-small">👑</span>
-                <span class="preview-big">📜</span>
-                <span class="preview-small">🍷</span>
-                <span class="preview-small">🔔</span>
+            <div class="players-form">
+                <h3>הכניסו את שמות השחקנים:</h3>
+                ${playersHtml}
+                <button class="add-player-btn" id="addPlayerBtn">+ הוסיפו שחקן/ית</button>
             </div>
             <br>
             <button class="btn" id="startBtn">🎉 התחילו לשחק!</button>
@@ -913,20 +817,17 @@ function renderPlayingScreen() {
         `;
     };
 
-    const timerHtml = state.timeLimit > 0 ? `
-        <div class="timer-bar" style="display:block">
-            <div class="timer-bar-fill" style="width: ${(state.timeLeft / (state.timeLimit * 10)) * 100}%"></div>
-        </div>
-    ` : '';
+    const scoresHtml = state.players.map((name, i) => {
+        const isCurrent = i === state.currentPlayerIndex;
+        return `<div class="stat" style="${isCurrent ? 'border: 2px solid #ffd700;' : ''}">${name}: <span>${state.scores[i]}</span></div>`;
+    }).join('');
 
     return `
+        <div class="current-player-banner">🎯 תור של ${state.players[state.currentPlayerIndex]}</div>
         <div class="stats-bar">
-            <div class="stat">ניקוד: <span>${state.score}</span></div>
-            <div class="stat">סיבוב: <span>${state.round}/${state.totalRounds}</span></div>
-            <div class="stat">רצף: <span>${state.streak}🔥</span></div>
-            ${state.mixedSizes ? '<div class="stat">📐 גדלים שונים</div>' : ''}
+            ${scoresHtml}
+            <div class="stat">סיבוב: <span>${state.round}</span></div>
         </div>
-        ${timerHtml}
         <div class="message">
             <div class="message-text ${state.messageType}">${state.message}</div>
         </div>
@@ -934,26 +835,35 @@ function renderPlayingScreen() {
             ${renderCard(state.card1, 1, state.selectedOnCard1, state.card1Sizes)}
             ${renderCard(state.card2, 2, state.selectedOnCard2, state.card2Sizes)}
         </div>
+        <div style="text-align:center; margin-top: 10px;">
+            <button class="btn small" id="endGameBtn">🏁 סיימו משחק</button>
+        </div>
     `;
 }
 
 function renderEndScreen() {
-    let message = '';
-    const maxScore = state.totalRounds * 25;
-    const pct = state.score / maxScore;
+    const sorted = state.players.map((name, i) => ({ name, score: state.scores[i] }))
+        .sort((a, b) => b.score - a.score);
 
-    if (pct > 0.8) message = '🏆 מדהים! אתם אלופי חידון פורים!';
-    else if (pct > 0.5) message = '🎉 כל הכבוד! שיחקתם מצוין!';
-    else if (pct > 0.3) message = '👏 לא רע! תנסו שוב לשפר!';
-    else message = '💪 המשיכו להתאמן!';
+    const winner = sorted[0];
+    const isTie = sorted.length > 1 && sorted[0].score === sorted[1].score;
+
+    const scoresListHtml = sorted.map((p, i) => {
+        const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '⭐';
+        return `<p style="font-size: 1.3em; margin: 8px 0;">${medal} ${p.name}: <span style="color: #ffd700; font-weight: 900;">${p.score}</span> נקודות</p>`;
+    }).join('');
+
+    const winnerMsg = isTie ? '🤝 תיקו!' : `🏆 ${winner.name} ניצח/ה!`;
 
     return `
         <div class="end-screen">
             <h2>🎭 המשחק הסתיים! 🎭</h2>
-            <div class="final-label">הניקוד הסופי שלכם:</div>
-            <div class="final-score">${state.score}</div>
-            <p style="font-size: 1.3em; margin: 15px 0;">${message}</p>
-            <p style="opacity: 0.8;">רצף הכי ארוך: ${state.bestStreak} 🔥</p>
+            <div class="final-score" style="font-size: 2em;">${winnerMsg}</div>
+            <div style="margin: 20px 0;">
+                <h3 style="color: #ffd700; margin-bottom: 10px;">תוצאות:</h3>
+                ${scoresListHtml}
+            </div>
+            <p style="opacity: 0.8;">סה"כ ${state.round} סיבובים | רצף הכי ארוך: ${state.bestStreak} 🔥</p>
             <br>
             <button class="btn" id="playAgainBtn">🔄 שחקו שוב</button>
         </div>
@@ -964,29 +874,46 @@ function bindEvents() {
     const startBtn = document.getElementById('startBtn');
     if (startBtn) {
         startBtn.addEventListener('click', () => {
-            const activeDiff = document.querySelector('.diff-btn.active');
-            const diff = activeDiff ? activeDiff.dataset.diff : 'normal';
-            startGame(diff);
+            // Read player names from inputs
+            document.querySelectorAll('.player-name-input').forEach(input => {
+                const idx = parseInt(input.dataset.index);
+                state.players[idx] = input.value.trim();
+            });
+            // Validate: all names must be filled
+            const emptyNames = state.players.some(n => n === '');
+            if (emptyNames) {
+                alert('נא למלא את שמות כל השחקנים!');
+                return;
+            }
+            startGame();
         });
     }
 
-    document.querySelectorAll('.diff-btn').forEach(btn => {
+    const addPlayerBtn = document.getElementById('addPlayerBtn');
+    if (addPlayerBtn) {
+        addPlayerBtn.addEventListener('click', () => {
+            // Save current input values before re-render
+            document.querySelectorAll('.player-name-input').forEach(input => {
+                const idx = parseInt(input.dataset.index);
+                state.players[idx] = input.value;
+            });
+            state.players.push('');
+            render();
+        });
+    }
+
+    document.querySelectorAll('.remove-player').forEach(btn => {
         btn.addEventListener('click', () => {
-            document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
+            // Save current input values before re-render
+            document.querySelectorAll('.player-name-input').forEach(input => {
+                const idx = parseInt(input.dataset.index);
+                state.players[idx] = input.value;
+            });
+            const idx = parseInt(btn.dataset.index);
+            state.players.splice(idx, 1);
+            render();
         });
     });
-
-    const mixedToggle = document.getElementById('mixedSizesToggle');
-    if (mixedToggle) {
-        mixedToggle.addEventListener('change', () => {
-            state.mixedSizes = mixedToggle.checked;
-            const preview = document.getElementById('sizePreview');
-            if (preview) {
-                preview.classList.toggle('active', state.mixedSizes);
-            }
-        });
-    }
 
     document.querySelectorAll('.card-item').forEach(item => {
         item.addEventListener('click', () => {
@@ -995,6 +922,13 @@ function bindEvents() {
             selectSymbol(cardNum, idx);
         });
     });
+
+    const endGameBtn = document.getElementById('endGameBtn');
+    if (endGameBtn) {
+        endGameBtn.addEventListener('click', () => {
+            endGame();
+        });
+    }
 
     const playAgainBtn = document.getElementById('playAgainBtn');
     if (playAgainBtn) {
