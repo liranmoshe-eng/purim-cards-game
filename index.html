@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>חידון פורים - מצא את הזהה!</title>
+    <title>משחק דאבל לפורים - מצא את הזהה!</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;900&display=swap');
 
@@ -404,6 +404,45 @@
             margin-bottom: 5px;
         }
 
+        .level-btns {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+
+        .level-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.5);
+            padding: 12px 25px;
+            font-size: 1.1em;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: 'Heebo', sans-serif;
+            transition: all 0.3s;
+        }
+
+        .level-btn:hover, .level-btn.active {
+            background: rgba(255,255,255,0.4);
+            border-color: #ffd700;
+        }
+
+        .card.card-hard {
+            width: 420px;
+            height: 420px;
+        }
+
+        @media (max-width: 850px) {
+            .card.card-hard { width: 350px; height: 350px; }
+        }
+
+        @media (max-width: 480px) {
+            .card.card-hard { width: 300px; height: 300px; }
+        }
+
         @media (max-width: 850px) {
             .header h1 { font-size: 1.8em; }
             .card { width: 320px; height: 320px; padding: 30px; }
@@ -436,7 +475,7 @@
 
 <div class="header">
     <h1>🎭 מצא את הזהה! 🎭</h1>
-    <p>חידון פורים</p>
+    <p>משחק דאבל לפורים</p>
 </div>
 
 <div id="app"></div>
@@ -584,6 +623,7 @@ let state = {
     usedPairs: new Set(),
     message: '',
     messageType: '',
+    level: 'regular',
     mixedSizes: false,
     shuffledSymbols: null,
     card1Sizes: [],
@@ -662,15 +702,32 @@ function nextRound() {
     state.round++;
 
     const [i, j] = getRandomPair();
-    state.card1 = shuffleArray(allCards[i]);
-    state.card2 = shuffleArray(allCards[j]);
+    let c1 = [...allCards[i]];
+    let c2 = [...allCards[j]];
+
+    if (state.level === 'hard') {
+        // Add 3 extra distractor symbols to each card
+        const allUsed = new Set([...c1, ...c2]);
+        const available = [];
+        for (let s = 0; s < 57; s++) {
+            if (!allUsed.has(s)) available.push(s);
+        }
+        const shuffledAvail = shuffleArray(available);
+        // 3 unique distractors for card1, 3 different for card2
+        c1 = c1.concat(shuffledAvail.slice(0, 3));
+        c2 = c2.concat(shuffledAvail.slice(3, 6));
+    }
+
+    state.card1 = shuffleArray(c1);
+    state.card2 = shuffleArray(c2);
     state.selectedOnCard1 = null;
     state.selectedOnCard2 = null;
     state.message = `סיבוב ${state.round} - תור של ${state.players[state.currentPlayerIndex]}`;
     state.messageType = 'info';
 
-    state.card1Sizes = generateSizeAssignments(8);
-    state.card2Sizes = generateSizeAssignments(8);
+    const itemCount = state.level === 'hard' ? 11 : 8;
+    state.card1Sizes = generateSizeAssignments(itemCount);
+    state.card2Sizes = generateSizeAssignments(itemCount);
 
     render();
 }
@@ -779,11 +836,16 @@ function renderStartScreen() {
 
     return `
         <div class="start-screen">
-            <h2>🎭 ברוכים הבאים לחידון פורים! 🎭</h2>
+            <h2>🎭 ברוכים הבאים למשחק דאבל לפורים! 🎭</h2>
             <div class="players-form">
                 <h3>הכניסו את שמות השחקנים:</h3>
                 ${playersHtml}
                 <button class="add-player-btn" id="addPlayerBtn">+ הוסיפו שחקן/ית</button>
+            </div>
+            <h3 style="color: #ffd700; margin: 20px 0 10px;">בחרו רמה:</h3>
+            <div class="level-btns">
+                <button class="level-btn ${state.level === 'regular' ? 'active' : ''}" data-level="regular">🟢 רגיל<br><small>8 סמלים בכל קלף</small></button>
+                <button class="level-btn ${state.level === 'hard' ? 'active' : ''}" data-level="hard">🔴 מאתגר<br><small>11 סמלים בכל קלף</small></button>
             </div>
             <br>
             <button class="btn" id="startBtn">🎉 התחילו לשחק!</button>
@@ -809,8 +871,9 @@ function renderPlayingScreen() {
 
         const label = cardNum === 1 ? 'כרטיס א\'' : 'כרטיס ב\'';
         const mixedClass = state.mixedSizes ? 'mixed-sizes' : '';
+        const hardClass = state.level === 'hard' ? 'card-hard' : '';
         return `
-            <div class="card ${mixedClass}">
+            <div class="card ${mixedClass} ${hardClass}">
                 <div class="card-label">${label}</div>
                 ${itemsHtml}
             </div>
@@ -888,6 +951,14 @@ function bindEvents() {
             startGame();
         });
     }
+
+    document.querySelectorAll('.level-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            state.level = btn.dataset.level;
+        });
+    });
 
     const addPlayerBtn = document.getElementById('addPlayerBtn');
     if (addPlayerBtn) {
