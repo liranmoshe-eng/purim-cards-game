@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>משחק כרטיסיות פורים - מצא את הזהה!</title>
+    <title>חידון פורים - מצא את הזהה!</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;900&display=swap');
 
@@ -470,7 +470,7 @@
 
 <div class="header">
     <h1>🎭 מצא את הזהה! 🎭</h1>
-    <p>משחק כרטיסיות פורים</p>
+    <p>חידון פורים</p>
 </div>
 
 <div id="app"></div>
@@ -860,15 +860,7 @@ function getSymbol(cardSymbolIndex) {
 function renderStartScreen() {
     return `
         <div class="start-screen">
-            <h2>🎭 ברוכים הבאים למשחק הכרטיסיות של פורים! 🎭</h2>
-            <div class="rules">
-                <h3>📋 חוקי המשחק</h3>
-                <p>🔹 בכל סיבוב מוצגים שני כרטיסים עגולים</p>
-                <p>🔹 על כל כרטיס יש 8 תמונות מעולם הפורים</p>
-                <p>🔹 לכל זוג כרטיסים יש בדיוק תמונה אחת משותפת</p>
-                <p>🔹 לחצו על התמונה המשותפת בשני הכרטיסים!</p>
-                <p>🔹 ככל שתמצאו מהר יותר - יותר נקודות! 🏆</p>
-            </div>
+            <h2>🎭 ברוכים הבאים לחידון פורים! 🎭</h2>
             <h3 style="color: #ffd700; margin: 20px 0 10px;">בחרו רמת קושי:</h3>
             <div class="difficulty-btns">
                 <button class="diff-btn" data-diff="easy">🟢 קל<br><small>8 סיבובים, ללא זמן</small></button>
@@ -950,7 +942,7 @@ function renderEndScreen() {
     const maxScore = state.totalRounds * 25;
     const pct = state.score / maxScore;
 
-    if (pct > 0.8) message = '🏆 מדהים! אתם אלופי פורים!';
+    if (pct > 0.8) message = '🏆 מדהים! אתם אלופי חידון פורים!';
     else if (pct > 0.5) message = '🎉 כל הכבוד! שיחקתם מצוין!';
     else if (pct > 0.3) message = '👏 לא רע! תנסו שוב לשפר!';
     else message = '💪 המשיכו להתאמן!';
